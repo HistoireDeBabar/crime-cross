@@ -1,4 +1,4 @@
-// Retrieves data from the police api about specific forces
+// Processes the Data Collection for each force.
 
 package main
 
@@ -17,7 +17,7 @@ func NewForcesDataProcessor(dataCollector DataCollector) (transformer *ForcesDat
 	return transformer
 }
 
-// Retreieves all the basic data about the forces from the police api
+// Transforms data byte array to a []Forces array
 func (fdc *ForcesDataProcessor) Transform(data []byte) (forces []Force, err error) {
 	if len(data) == 0 {
 		return forces, nil
