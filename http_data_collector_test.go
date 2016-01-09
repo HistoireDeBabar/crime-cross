@@ -1,4 +1,4 @@
-package forces
+package main
 
 import (
 	"github.com/HistoireDeBabar/crime-cross/mocks"
@@ -6,71 +6,62 @@ import (
 	"testing"
 )
 
-func TestRequestReturnsNoResponseInBodReturnsNoForces(t *testing.T) {
+func TestResponseWithNoBodyReturnsEmptyArray(t *testing.T) {
 	mockClient := http.Client{
 		Transport: &mocks.SuccessForceListNoResponseBody{
 			StatusCode: 200,
 		},
 	}
 
-	subject := ForcesDataCollector{
-		Client:   &mockClient,
+	subject := &HttpDataCollector{
+		client:   &mockClient,
 		endpoint: "https://data.police.uk/api/forces",
 	}
-
-	result, err := subject.GetForcesIdentifier()
-
+	data, err := subject.Collect()
 	if err != nil {
 		t.Errorf("Unexpected Error %v", err)
 	}
-	if len(result) != 0 {
-		t.Errorf("expected result length to be 0 got: %v", len(result))
+	if len(data) != 0 {
+		t.Errorf("expected result length to be 0 got: %v", len(data))
 	}
 }
 
-func TestRequestReturnsValidBody(t *testing.T) {
+func TestReturnsValidByteArrary(t *testing.T) {
 	mockClient := http.Client{
 		Transport: &mocks.SuccessForceListWithResponseBody{
 			StatusCode: 200,
 		},
 	}
 
-	subject := ForcesDataCollector{
-		Client:   &mockClient,
+	dataCollector := &HttpDataCollector{
+		client:   &mockClient,
 		endpoint: "https://data.police.uk/api/forces",
 	}
 
-	result, err := subject.GetForcesIdentifier()
+	result, _ := dataCollector.Collect()
 
-	if err != nil {
-		t.Errorf("Unexpected Error %v", err)
+	expectedResult := []byte{91, 123, 34, 105, 100, 34, 58, 32, 34, 115, 111, 117, 116, 104, 95, 115, 104, 105, 101, 108, 100, 115, 34, 44, 32, 34, 110, 97, 109, 101, 34, 58, 32, 34, 83, 111, 117, 116, 104, 32, 83, 104, 105, 101, 108, 100, 115, 34, 125, 93}
+	if result == nil {
+		t.Errorf("Expected result to equal %v got %v", result, expectedResult)
 	}
-	if len(result) != 1 {
-		t.Errorf("expected result length to be 1 got: %v", len(result))
-	}
-	var force = result[0]
-	if force.Id != "south_shields" {
-		t.Errorf("expected id to equal south_shields got", force.Id)
-	}
-
-	if force.Name != "South Shields" {
-		t.Errorf("expected id to equal South Shields got", force.Name)
+	if len(result) != len(expectedResult) {
+		t.Errorf("Unexpected Error: Response is incorrect lenght")
 	}
 }
 
-func TestClientErrorCode(t *testing.T) {
+func TestReturnsServerErrorCode(t *testing.T) {
 	mockClient := http.Client{
 		Transport: &mocks.ResponseErrorStatusCode{
 			StatusCode: 500,
 		},
 	}
 
-	subject := ForcesDataCollector{
-		Client:   &mockClient,
+	subject := &HttpDataCollector{
+		client:   &mockClient,
 		endpoint: "https://data.police.uk/api/forces",
 	}
 
-	_, err := subject.GetForcesIdentifier()
+	_, err := subject.Collect()
 	if err == nil {
 		t.Errorf("Expected Error from Server, got Nil")
 	}
@@ -79,19 +70,19 @@ func TestClientErrorCode(t *testing.T) {
 	}
 }
 
-func TestErrorFromServerServerError(t *testing.T) {
+func TestReturnsClientErrorCode(t *testing.T) {
 	mockClient := http.Client{
 		Transport: &mocks.ResponseErrorStatusCode{
 			StatusCode: 404,
 		},
 	}
 
-	subject := ForcesDataCollector{
-		Client:   &mockClient,
+	subject := &HttpDataCollector{
+		client:   &mockClient,
 		endpoint: "https://data.police.uk/api/forces",
 	}
 
-	_, err := subject.GetForcesIdentifier()
+	_, err := subject.Collect()
 	if err == nil {
 		t.Errorf("Expected Error from Server, got Nil")
 	}

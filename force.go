@@ -1,4 +1,4 @@
-package forces
+package main
 
 type Force struct {
 	Id   string
