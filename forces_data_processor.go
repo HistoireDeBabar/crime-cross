@@ -17,6 +17,16 @@ func NewForcesDataProcessor(dataCollector DataCollector) (transformer *ForcesDat
 	return transformer
 }
 
+func NewDefaultForcesDataProcessor() (collector *UpdateChecker) {
+	dataCollector := &HttpDataCollector{
+		endpoint: forcesEndpoint,
+	}
+	collector = &UpdateChecker{
+		dataCollector: dataCollector,
+	}
+	return collector
+}
+
 // Transforms data byte array to a []Forces array
 func (fdc *ForcesDataProcessor) Transform(data []byte) (forces []Force, err error) {
 	if len(data) == 0 {
