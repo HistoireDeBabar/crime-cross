@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/HistoireDeBabar/crime-cross/mocks"
 	"net/http"
 	"testing"
@@ -20,7 +21,7 @@ func TestGetValidDataFromRequest(t *testing.T) {
 	}
 	data, _ := dataCollector.Collect()
 	subject := UpdateChecker{}
-	result, err := subject.Transform(data)
+	result, err := subject.TransformPoliceDate(data)
 	if err != nil {
 		t.Errorf("UnexpectedError:", err)
 	}
@@ -53,7 +54,7 @@ func TestGetInValidDataFromRequest(t *testing.T) {
 	}
 	data, _ := dataCollector.Collect()
 	subject := UpdateChecker{}
-	result, err := subject.Transform(data)
+	result, err := subject.TransformPoliceDate(data)
 	if err != nil {
 		t.Errorf("UnexpectedError:", err)
 	}
@@ -81,3 +82,23 @@ func TestWhetherADateCanBeUpdatedFalsey(t *testing.T) {
 		t.Errorf("Expected to not be allowed to update")
 	}
 }
+
+func TestProcess(t *testing.T) {
+	subject := NewDefaultUpdateChecker()
+	result := subject.Check()
+	fmt.Println(result)
+}
+
+/*
+func TestTransformFromS3Document(t *testing.T) {
+	data := []byte{
+		91, 10, 32, 32, 123, 10, 32, 32, 32, 32, 34, 100,
+		97, 116, 101, 34, 58, 32, 34, 50, 48, 49, 53, 45,
+		77, 97, 114, 45, 50, 57, 34, 10, 32, 32, 125, 10, 93,
+		10}
+	subject := UpdateChecker{}
+	result, err := subject.TransformLastUpdated(data)
+	fmt.Println(result)
+	fmt.Println(err)
+
+} */

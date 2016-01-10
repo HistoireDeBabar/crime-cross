@@ -17,11 +17,11 @@ func NewForcesDataProcessor(dataCollector DataCollector) (transformer *ForcesDat
 	return transformer
 }
 
-func NewDefaultForcesDataProcessor() (collector *UpdateChecker) {
+func NewDefaultForcesDataProcessor() (collector *ForcesDataProcessor) {
 	dataCollector := &HttpDataCollector{
 		endpoint: forcesEndpoint,
 	}
-	collector = &UpdateChecker{
+	collector = &ForcesDataProcessor{
 		dataCollector: dataCollector,
 	}
 	return collector
