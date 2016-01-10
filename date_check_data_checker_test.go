@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/HistoireDeBabar/crime-cross/mocks"
 	"net/http"
 	"testing"
@@ -83,13 +82,23 @@ func TestWhetherADateCanBeUpdatedFalsey(t *testing.T) {
 	}
 }
 
-func TestProcess(t *testing.T) {
-	subject := NewDefaultUpdateChecker()
-	result := subject.Check()
-	fmt.Println(result)
+func TestWhenEitherIsZeroReturnsTrue(t *testing.T) {
+	subject := UpdateChecker{}
+	lastUpdated := time.Time{}
+	lastChecked := time.Date(2009, time.November, 10, 24, 0, 0, 0, time.UTC)
+	canUpdate := subject.CanUpdate(lastUpdated, lastChecked)
+	if canUpdate == false {
+		t.Errorf("Expected to be true when last updated is zero")
+	}
+
+	lastUpdated = time.Date(2009, time.November, 10, 24, 0, 0, 0, time.UTC)
+	lastChecked = time.Time{}
+	canUpdate = subject.CanUpdate(lastUpdated, lastChecked)
+	if canUpdate == false {
+		t.Errorf("Expected to be true when last checked is zero")
+	}
 }
 
-/*
 func TestTransformFromS3Document(t *testing.T) {
 	data := []byte{
 		91, 10, 32, 32, 123, 10, 32, 32, 32, 32, 34, 100,
@@ -98,7 +107,22 @@ func TestTransformFromS3Document(t *testing.T) {
 		10}
 	subject := UpdateChecker{}
 	result, err := subject.TransformLastUpdated(data)
-	fmt.Println(result)
-	fmt.Println(err)
+	if err != nil {
+		t.Errorf("UnexpectedError: %v", err)
+	}
 
-} */
+	if result.Year() != 2015 {
+		t.Errorf("Year Expected 2015, Got %d", result.Year())
+	}
+
+	if result.IsZero() {
+		t.Error("Result should be not be Zero time")
+	}
+	if result.Month() != time.March {
+		t.Errorf("result Month should be March not %v", result.Month())
+	}
+
+	if result.Day() != 29 {
+		t.Errorf("result Day should be 29 not %d", result.Day())
+	}
+}

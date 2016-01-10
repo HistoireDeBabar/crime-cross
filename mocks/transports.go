@@ -61,7 +61,7 @@ type ValidDateTransport struct {
 }
 
 func (t *ValidDateTransport) RoundTrip(request *http.Request) (response *http.Response, err error) {
-	reader := strings.NewReader("[{\"date\": \"2011-01-01\"}]")
+	reader := strings.NewReader("{\"date\": \"2011-01-01\"}")
 	readerCloser := ioutil.NopCloser(reader)
 	response = &http.Response{
 		Body:       readerCloser,
@@ -75,7 +75,7 @@ type InValidDateTransport struct {
 }
 
 func (t *InValidDateTransport) RoundTrip(request *http.Request) (response *http.Response, err error) {
-	reader := strings.NewReader("[{\"date\": \"notInCorrecFormat\"}]")
+	reader := strings.NewReader("{\"date\": \"notInCorrecFormat\"}")
 	readerCloser := ioutil.NopCloser(reader)
 	response = &http.Response{
 		Body:       readerCloser,

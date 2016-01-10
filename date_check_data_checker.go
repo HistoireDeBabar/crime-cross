@@ -50,11 +50,16 @@ func (dateChecker *UpdateChecker) Check() (valid bool) {
 		return false
 	}
 	policeUpdatedAtDate, _ := dateChecker.TransformPoliceDate(policeUpdateData)
-	lastCheckedAtDate, _ := dateChecker.TransformPoliceDate(lastUpdated)
+	lastCheckedAtDate, _ := dateChecker.TransformLastUpdated(lastUpdated)
 	return dateChecker.CanUpdate(policeUpdatedAtDate, lastCheckedAtDate)
 }
 
 func (dateChecker *UpdateChecker) CanUpdate(lastUpdatedAt time.Time, lastChecked time.Time) (valid bool) {
+	//fallback where if either is zero we can update
+	if lastUpdatedAt.IsZero() || lastChecked.IsZero() {
+		return true
+	}
+
 	if lastUpdatedAt.After(lastChecked) {
 		return true
 	}
@@ -62,12 +67,13 @@ func (dateChecker *UpdateChecker) CanUpdate(lastUpdatedAt time.Time, lastChecked
 }
 
 func (dateChecker *UpdateChecker) TransformPoliceDate(data []byte) (updatedAt time.Time, err error) {
-	dates := []DateString{}
+	dates := DateString{}
 	err = json.Unmarshal(data, &dates)
 	if err != nil {
+		fmt.Println(err)
 		return time.Time{}, err
 	}
-	return isoConverter.IsoStringToDate(dates[0].Date), nil
+	return isoConverter.IsoStringToDate(dates.Date), nil
 }
 
 func (dateChecker *UpdateChecker) TransformLastUpdated(data []byte) (lastUpdatedAt time.Time, err error) {
@@ -80,7 +86,6 @@ func (dateChecker *UpdateChecker) TransformLastUpdated(data []byte) (lastUpdated
 		return time.Time{}, errors.New("No Date Data From S3")
 	}
 	lastUpdatedAt, err = time.Parse(form, dates[0].Date)
-
 	if err != nil {
 		return time.Time{}, err
 	}

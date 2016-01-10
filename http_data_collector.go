@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"io/ioutil"
 	"net/http"
 )
@@ -24,13 +23,9 @@ func (dataCollector *HttpDataCollector) Collect() (data []byte, err error) {
 	if err != nil {
 		return nil, err
 	}
-	if response.StatusCode != 200 {
-		return nil, errors.New("Error Response from Server")
-	}
 
 	defer response.Body.Close()
 	body, err := ioutil.ReadAll(response.Body)
-
 	if err != nil {
 		return data, nil
 	}
