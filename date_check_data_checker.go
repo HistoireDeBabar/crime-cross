@@ -13,6 +13,8 @@ const form = "2006-Jan-02"
 type UpdateChecker struct {
 	policeDateCollector      DataCollector
 	lastUpdatedDateCollector DataCollector
+	policeUpdatedDate        time.Time
+	lastCheckedDate          time.Time
 }
 
 // Returns an UpdateChecker with the given DataCollectors.
@@ -42,30 +44,29 @@ type DateString struct {
 
 // Perform a Check to see whether the data needs to update.
 func (dateChecker *UpdateChecker) Check() (valid bool) {
-	//do data collection async
-	policeUpdateData, err := dateChecker.policeDateCollector.Collect()
-	if err != nil {
-		fmt.Println(err)
-		return false
-	}
-	lastUpdated, err := dateChecker.lastUpdatedDateCollector.Collect()
-	if err != nil {
-		fmt.Println(err)
-		return false
-	}
-	policeUpdatedAtDate, _ := dateChecker.TransformPoliceDate(policeUpdateData)
-	lastCheckedAtDate, _ := dateChecker.TransformLastUpdated(lastUpdated)
-	return dateChecker.CanUpdate(policeUpdatedAtDate, lastCheckedAtDate)
+	go dateChecker.getPoliceData()
+	go dateChecker.getLastUpdatedAt()
+	return dateChecker.CanUpdate()
+}
+
+func (dateChecker *UpdateChecker) getPoliceData() {
+	policeUpdateData, _ := dateChecker.policeDateCollector.Collect()
+	dateChecker.policeUpdatedDate, _ = dateChecker.TransformPoliceDate(policeUpdateData)
+}
+
+func (dateChecker *UpdateChecker) getLastUpdatedAt() {
+	lastUpdatedAt, _ := dateChecker.lastUpdatedDateCollector.Collect()
+	dateChecker.lastCheckedDate, _ = dateChecker.TransformLastUpdated(lastUpdatedAt)
 }
 
 // Date compare function.
-func (dateChecker *UpdateChecker) CanUpdate(lastUpdatedAt time.Time, lastChecked time.Time) (valid bool) {
+func (dateChecker *UpdateChecker) CanUpdate() (valid bool) {
 	//fallback where if either is zero we can update
-	if lastUpdatedAt.IsZero() || lastChecked.IsZero() {
+	if dateChecker.policeUpdatedDate.IsZero() || dateChecker.lastCheckedDate.IsZero() {
 		return true
 	}
 
-	if lastUpdatedAt.After(lastChecked) {
+	if dateChecker.policeUpdatedDate.After(dateChecker.lastCheckedDate) {
 		return true
 	}
 	return false

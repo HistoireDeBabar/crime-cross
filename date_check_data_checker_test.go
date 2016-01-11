@@ -63,37 +63,53 @@ func TestGetInValidDataFromRequest(t *testing.T) {
 }
 
 func TestWhetherADateCanBeUpdatedTruthy(t *testing.T) {
-	subject := UpdateChecker{}
 	lastUpdated := time.Date(2009, time.November, 10, 29, 0, 0, 0, time.UTC)
 	lastChecked := time.Date(2009, time.November, 10, 24, 0, 0, 0, time.UTC)
-	canUpdate := subject.CanUpdate(lastUpdated, lastChecked)
+	subject := UpdateChecker{
+		policeUpdatedDate: lastUpdated,
+		lastCheckedDate:   lastChecked,
+	}
+	canUpdate := subject.CanUpdate()
 	if canUpdate == false {
 		t.Errorf("Expected to be allowed to update")
 	}
 }
 
 func TestWhetherADateCanBeUpdatedFalsey(t *testing.T) {
-	subject := UpdateChecker{}
+
 	lastUpdated := time.Date(2009, time.January, 10, 29, 0, 0, 0, time.UTC)
 	lastChecked := time.Date(2009, time.November, 10, 24, 0, 0, 0, time.UTC)
-	canUpdate := subject.CanUpdate(lastUpdated, lastChecked)
+	subject := UpdateChecker{
+		policeUpdatedDate: lastUpdated,
+		lastCheckedDate:   lastChecked,
+	}
+	canUpdate := subject.CanUpdate()
 	if canUpdate == true {
 		t.Errorf("Expected to not be allowed to update")
 	}
 }
 
 func TestWhenEitherIsZeroReturnsTrue(t *testing.T) {
-	subject := UpdateChecker{}
 	lastUpdated := time.Time{}
 	lastChecked := time.Date(2009, time.November, 10, 24, 0, 0, 0, time.UTC)
-	canUpdate := subject.CanUpdate(lastUpdated, lastChecked)
+	subject := UpdateChecker{
+		policeUpdatedDate: lastUpdated,
+		lastCheckedDate:   lastChecked,
+	}
+	canUpdate := subject.CanUpdate()
 	if canUpdate == false {
 		t.Errorf("Expected to be true when last updated is zero")
 	}
 
 	lastUpdated = time.Date(2009, time.November, 10, 24, 0, 0, 0, time.UTC)
 	lastChecked = time.Time{}
-	canUpdate = subject.CanUpdate(lastUpdated, lastChecked)
+
+	subject = UpdateChecker{
+		policeUpdatedDate: lastUpdated,
+		lastCheckedDate:   lastChecked,
+	}
+
+	canUpdate = subject.CanUpdate()
 	if canUpdate == false {
 		t.Errorf("Expected to be true when last checked is zero")
 	}
