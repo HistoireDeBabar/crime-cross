@@ -1,5 +1,9 @@
 package main
 
+import (
+	"time"
+)
+
 type Checker interface {
-	Check() bool
+	Check() (bool, time.Time)
 }

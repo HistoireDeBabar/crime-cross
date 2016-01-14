@@ -1,6 +1,7 @@
 package main
 
 type Force struct {
-	Id   string
-	Name string
+	Id            string
+	Name          string
+	StopAndSearch []StopAndSearch
 }

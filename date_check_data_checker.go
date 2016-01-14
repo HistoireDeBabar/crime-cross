@@ -20,23 +20,23 @@ type UpdateChecker struct {
 }
 
 // Returns an UpdateChecker with the given DataCollectors.
-func NewUpdateChecker(policeDataCollector DataCollector, lastUpdated DataCollector) (collector *UpdateChecker) {
-	collector = &UpdateChecker{
+func NewUpdateChecker(policeDataCollector DataCollector, lastUpdated DataCollector) (checker Checker) {
+	checker = &UpdateChecker{
 		policeDateCollector:      policeDataCollector,
 		lastUpdatedDateCollector: lastUpdated,
 	}
-	return collector
+	return
 }
 
 // Returns a Default Update Checker with predefined configs.
-func NewDefaultUpdateChecker() (collector Checker) {
+func NewDefaultUpdateChecker() (checker Checker) {
 	policeDataCollector := NewHttpDataCollector(dateCheckEndpoint)
 	lastUpdated := NewDefaultS3DataCollector()
-	collector = &UpdateChecker{
+	checker = &UpdateChecker{
 		policeDateCollector:      policeDataCollector,
 		lastUpdatedDateCollector: lastUpdated,
 	}
-	return collector
+	return
 }
 
 // Internal Class for parsing data data.
@@ -45,12 +45,12 @@ type DateString struct {
 }
 
 // Perform a Check to see whether the data needs to update.
-func (dateChecker *UpdateChecker) Check() (valid bool) {
+func (dateChecker *UpdateChecker) Check() (valid bool, update time.Time) {
 	dateChecker.wg.Add(2)
 	go dateChecker.getPoliceData()
 	go dateChecker.getLastUpdatedAt()
 	dateChecker.wg.Wait()
-	return dateChecker.CanUpdate()
+	return dateChecker.CanUpdate(), dateChecker.policeUpdatedDate
 }
 
 func (dateChecker *UpdateChecker) getPoliceData() {
