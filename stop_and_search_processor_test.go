@@ -39,10 +39,6 @@ func TestTransformShouldReturnArrayOfStopAndSearched(t *testing.T) {
 		t.Errorf("Error In Name, got: %v", result.Legislation)
 	}
 
-	if result.Outcome != "Suspect summonsed to court" {
-		t.Errorf("Error in Outcome, got: %v", result.Outcome)
-	}
-
 	if result.DateTime != "2015-04-01T17:30:00" {
 		t.Errorf("Error in DateTime, got: %v", result.DateTime)
 	}
