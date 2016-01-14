@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/HistoireDeBabar/iso-string-converter"
+	"sync"
 	"time"
 )
 
@@ -15,6 +16,7 @@ type UpdateChecker struct {
 	lastUpdatedDateCollector DataCollector
 	policeUpdatedDate        time.Time
 	lastCheckedDate          time.Time
+	wg                       sync.WaitGroup
 }
 
 // Returns an UpdateChecker with the given DataCollectors.
@@ -44,19 +46,25 @@ type DateString struct {
 
 // Perform a Check to see whether the data needs to update.
 func (dateChecker *UpdateChecker) Check() (valid bool) {
+	dateChecker.wg.Add(2)
 	go dateChecker.getPoliceData()
 	go dateChecker.getLastUpdatedAt()
+	dateChecker.wg.Wait()
 	return dateChecker.CanUpdate()
 }
 
 func (dateChecker *UpdateChecker) getPoliceData() {
 	policeUpdateData, _ := dateChecker.policeDateCollector.Collect()
 	dateChecker.policeUpdatedDate, _ = dateChecker.TransformPoliceDate(policeUpdateData)
+	fmt.Printf("Last Updated By Police: %v \n", dateChecker.policeUpdatedDate)
+	dateChecker.wg.Done()
 }
 
 func (dateChecker *UpdateChecker) getLastUpdatedAt() {
 	lastUpdatedAt, _ := dateChecker.lastUpdatedDateCollector.Collect()
 	dateChecker.lastCheckedDate, _ = dateChecker.TransformLastUpdated(lastUpdatedAt)
+	fmt.Printf("Last Updated By Crime Cross: %v \n", dateChecker.lastCheckedDate)
+	dateChecker.wg.Done()
 }
 
 // Date compare function.
@@ -78,7 +86,7 @@ func (dateChecker *UpdateChecker) TransformPoliceDate(data []byte) (updatedAt ti
 	dates := DateString{}
 	err = json.Unmarshal(data, &dates)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Printf("%v \n", err.Error())
 		return time.Time{}, err
 	}
 	return isoConverter.IsoStringToDate(dates.Date), nil
@@ -90,13 +98,16 @@ func (dateChecker *UpdateChecker) TransformLastUpdated(data []byte) (lastUpdated
 	dates := []DateString{}
 	err = json.Unmarshal(data, &dates)
 	if err != nil {
+		fmt.Printf("%v \n", err.Error())
 		return time.Time{}, err
 	}
 	if len(dates) == 0 {
-		return time.Time{}, errors.New("No Date Data From S3")
+		return time.Time{}, errors.New("No dates in last updated data array")
 	}
+
 	lastUpdatedAt, err = time.Parse(form, dates[0].Date)
 	if err != nil {
+		fmt.Printf("%v \n", err.Error())
 		return time.Time{}, err
 	}
 	return lastUpdatedAt, nil
