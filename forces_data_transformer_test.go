@@ -5,7 +5,7 @@ import (
 )
 
 func TestRequestReturnsNoResponseInBodReturnsNoForces(t *testing.T) {
-	subject := ForcesDataProcessor{}
+	subject := ForceDataTransformer{}
 	result, err := subject.Transform([]byte{})
 
 	if err != nil {
@@ -18,7 +18,7 @@ func TestRequestReturnsNoResponseInBodReturnsNoForces(t *testing.T) {
 
 func TestRequestReturnsValidBody(t *testing.T) {
 
-	subject := ForcesDataProcessor{}
+	subject := ForceDataTransformer{}
 	validResponse := []byte{91, 123, 34, 105, 100, 34, 58, 32, 34, 115, 111, 117, 116, 104, 95, 115, 104, 105, 101, 108, 100, 115, 34, 44, 32, 34, 110, 97, 109, 101, 34, 58, 32, 34, 83, 111, 117, 116, 104, 32, 83, 104, 105, 101, 108, 100, 115, 34, 125, 93}
 	result, err := subject.Transform(validResponse)
 

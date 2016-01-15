@@ -2,27 +2,40 @@ package main
 
 import (
 	"fmt"
-	"time"
+	"sync"
 )
 
 func main() {
-	subject := NewDefaultUpdateChecker()
-	result, update := subject.Check()
+	dateChecker := NewDefaultUpdateChecker()
+	result, update := dateChecker.Check()
 	fmt.Printf("Can Update: %v \n", result)
 
 	if !result {
 		DestoryStack()
 		return
 	}
-	ProcessPoliceData(update)
+	dataProcessors := []DataProcessor{
+		NewDefaultPoliceDataProcessor(update),
+	}
+	Process(dataProcessors)
+	fmt.Println("Data Shipped")
 }
 
 func DestoryStack() {
-
+	// Send an event to lambda to destroy the stack.
 }
 
-func ProcessPoliceData(time time.Time) {
-	forcesProcessor := NewDefaultForcesDataProcessor()
-	forces := forcesProcessor.Process(time)
-	fmt.Println(forces)
+// Process a list of DataProcessors.
+func Process(dataProcessors []DataProcessor) {
+	wg := sync.WaitGroup{}
+	wg.Add(len(dataProcessors))
+	for process := range dataProcessors {
+		go func(process int) {
+			dataProcessors[process].Process()
+			wg.Done()
+		}(process)
+	}
+
+	wg.Wait()
+	return
 }
